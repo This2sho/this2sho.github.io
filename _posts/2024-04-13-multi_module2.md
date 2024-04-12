@@ -139,23 +139,25 @@ jobs:
           ./gradlew collectTestResults
 ```
 
-gradle에서는 병렬 작업  `parallel`을 지원하는데 로컬 환경에서 측정했을 때 차이는 다음과 같다.
+- gradle에서는 병렬 작업  `parallel`을 지원하는데 로컬 환경에서 측정했을 때 차이는 다음과 같다.
 
-- `./gradlew test` 수행시 42초   
-  ![image-20240413042851528](/images/2024-04-13-multi_module2/image-20240413042851528.png)
-- `./gradlew test --parallel` 수행시 33초  
-  ![image-20240413043001746](/images/2024-04-13-multi_module2/image-20240413043001746.png)
+  - `./gradlew test` 수행시 42초   
+    ![image-20240413042851528](/images/2024-04-13-multi_module2/image-20240413042851528.png)
 
-9초 정도 차이가 나는데 API 모듈에서 통합 테스트시 테스트 컨테이너를 띄우는데 오래 걸리기 때문에  
-병렬로 모듈 테스트시 API 모듈 테스트 시간(제일 오래걸리는 모듈 테스트 시간)이 곧 전체 테스트 시간임을 알 수 있다.  
-(아래는 API 모듈만 테스트했을 때, 걸리는 시간이다)  
-![image-20240413043858610](/images/2024-04-13-multi_module2/image-20240413043858610.png)
+  - `./gradlew test --parallel` 수행시 33초  
+    ![image-20240413043001746](/images/2024-04-13-multi_module2/image-20240413043001746.png)
 
-특정 모듈을 테스트할 때 다음과 같은 명령어를 사용한다.  
-`./gradlew :app-scheduler(모듈명):test`
 
-아래에 `./gradlew collectTestResults` 부분은 테스트 결과를 하나의 디렉토리에 복사하기위해  
-gradle task를 추가한 부분이다.
+​	9초 정도 차이가 나는데 API 모듈에서 통합 테스트시 테스트 컨테이너를 띄우는데 오래 걸리기 때문에  
+​	병렬로 모듈 테스트시 API 모듈 테스트 시간(제일 오래걸리는 모듈 테스트 시간)이 곧 전체 테스트 시간임을 알 수 있다.  
+​	(아래는 API 모듈만 테스트했을 때, 걸리는 시간이다)  
+​	![image-20240413043858610](/images/2024-04-13-multi_module2/image-20240413043858610.png)
+
+- 특정 모듈을 테스트할 때 다음과 같은 명령어를 사용한다.  
+  `./gradlew :app-scheduler(모듈명):test`
+
+- 아래에 `./gradlew collectTestResults` 부분은 테스트 결과를 하나의 디렉토리에 복사하기위해  
+  gradle task를 추가한 부분이다.
 
 최상단 루트 디렉토리의 `build.gradle`에 다음과 같이 추가해주면 된다.
 
@@ -179,7 +181,7 @@ task collectTestResults(type: Copy) {
 
 ```
 
-이렇게 하면 최상단 `build/allTestResults` 경로로 모든 모듈의 테스트 결과를 모을 수 있다.
+- 이렇게 하면 최상단 `build/allTestResults` 경로로 모든 모듈의 테스트 결과를 모을 수 있다.
 
 이후, `테스트 결과를 PR에 코멘트로 등록합니다` step과 `테스트 실패 시, 실패한 코드 라인에 Check 코멘트를 등록합니다` step을 다음과 같이 수정하면 된다.
 
