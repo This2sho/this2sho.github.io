@@ -8,7 +8,7 @@ toc: true
 author_profile: false
 ---
 
-[멀티 모듈 구성 상황과 적용](https://this2sho.github.io/project/multi_module1/)에 이어서 멀티 모듈을 적용하면서 적용한 CI, CD 방법을 기록하려고 한다.
+[멀티 모듈 구성 상황과 적용](https://this2sho.github.io/project/multi_module1/)에 이어서 멀티 모듈을 적용하면서 수정한 CI, CD 방법을 기록하려고 한다.
 
 # CI 수정
 
