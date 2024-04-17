@@ -214,13 +214,13 @@ CD 부분도 깃헙 액션의 경우 CI 부분과 거의 동일하게 변경해�
       id: check_changes
       run: |
         git fetch origin main
-        if git diff --name-only origin/main...HEAD | grep -q "^domain/"; then
+        if git diff --name-only HEAD^ HEAD | grep -q "^domain/"; then
             echo "domain 모듈이 변경되었습니다."
             echo "::set-output name=changes::domain_changed"
-        elif git diff --name-only origin/main...HEAD | grep -q "^app-api/"; then
+        elif git diff --name-only HEAD^ HEAD | grep -q "^app-api/"; then
             echo "api 모듈이 변경되었습니다."
             echo "::set-output name=changes::api_changed"
-        elif git diff --name-only origin/main...HEAD | grep -q "^app-scheduler/"; then
+        elif git diff --name-only HEAD^ HEAD | grep -q "^app-scheduler/"; then
             echo "scheduler 모듈이 변경되었습니다."
             echo "::set-output name=changes::scheduler_changed"
         else
@@ -281,7 +281,8 @@ CD 부분도 깃헙 액션의 경우 CI 부분과 거의 동일하게 변경해�
         platforms: linux/amd64
 ```
 
-CD의 경우에는 도커 파일을 추가로 실행 모듈 별로 생성해주었다.
+CD의 경우에는 main 브랜치로 Merge 이후이기 때문에 팀 PR 머지 전략에 따라 Squash & Merge(여러 커밋을 하나로)한 커밋(HEAD)   
+ 과  바로 이전(HEAD^) 커밋을 비교한다. 또한, 도커 파일을 추가로 실행 모듈 별로 생성해주었다.
 
 API 모듈의 경우 다음과 같이 jar 파일 이름만 수정해서 모듈 하위에 두었다. (스케줄러 모듈도 동일)
 
