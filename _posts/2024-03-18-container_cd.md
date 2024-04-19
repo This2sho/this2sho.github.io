@@ -114,7 +114,7 @@ x-environment:  &common_environment
     - DB_USERNAME=
     - DB_PASSWORD=
 
-		- ORIGIN=
+    - ORIGIN=
 		
     - KAKAO_API_KEY=
     - SEOUL_API_KEY=
