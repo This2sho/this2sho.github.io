@@ -100,16 +100,17 @@ jobs:
         run: |
           git fetch origin main
           if git diff --name-only origin/main...HEAD | grep -q "^domain/"; then
-              echo "domain 모듈이 변경되었습니다."
-              echo "::set-output name=changes::domain_changed"
-          elif git diff --name-only origin/main...HEAD | grep -q "^app-api/"; then
-              echo "api 모듈이 변경되었습니다."
-              echo "::set-output name=changes::api_changed"
-          elif git diff --name-only origin/main...HEAD | grep -q "^app-scheduler/"; then
-              echo "scheduler 모듈이 변경되었습니다."
-              echo "::set-output name=changes::scheduler_changed"
+            echo "domain 모듈이 변경되었습니다."
+            echo "::set-output name=domain_changed::true"
           else
-              echo "모듈에 변경사항이 없습니다."
+            if git diff --name-only origin/main...HEAD | grep -q "^app-api/"; then
+              echo "api 모듈이 변경되었습니다."
+              echo "::set-output name=api_changed::true"
+            fi
+            if git diff --name-only origin/main...HEAD | grep -q "^app-scheduler/"; then
+              echo "scheduler 모듈이 변경되었습니다."
+              echo "::set-output name=scheduler_changed::true"
+            fi
           fi
 ```
 
@@ -118,23 +119,28 @@ jobs:
 ```yaml
       - name: 변경된 모듈을 테스트한다.
         run: |
-          case "${{ steps.check_changes.outputs.changes }}" in
-              domain_changed)
-                  echo "도메인 모듈 및 하위 모듈을 테스트합니다."
-                  ./gradlew test --parallel
-                  ;;
-              api_changed)
-                  echo "api 모듈을 테스트합니다."
-                  ./gradlew :app-api:test -i
-                  ;;
-              scheduler_changed)
-                  echo "scheduler 모듈을 테스트합니다."
-                  ./gradlew :app-scheduler:test -i
-                  ;;
-              *)
-                  echo "모듈에 변경 사항이 없습니다."
-                  ;;
-          esac
+          domain_changed=${{ steps.check_changes.outputs.domain_changed }}
+          api_changed=${{ steps.check_changes.outputs.api_changed }}
+          scheduler_changed=${{ steps.check_changes.outputs.scheduler_changed }}
+
+          if [ "$domain_changed" == "true" ]; then
+            echo "도메인 모듈 및 하위 모듈을 테스트합니다."
+            ./gradlew test -i --parallel
+          else
+            if [ "$api_changed" == "true" ]; then
+              echo "api 모듈을 테스트합니다."
+              ./gradlew :app-api:test
+            fi
+
+            if [ "$scheduler_changed" == "true" ]; then
+              echo "scheduler 모듈을 테스트합니다."
+              ./gradlew :app-scheduler:test
+            fi
+
+            if [ "$api_changed" != "true" ] && [ "$scheduler_changed" != "true" ]; then
+              echo "모듈에 변경 사항이 없습니다."
+            fi
+          fi
           echo "테스트 결과를 하나의 디렉토리에 복사합니다."
           ./gradlew collectTestResults
 ```
@@ -215,37 +221,43 @@ CD 부분도 깃헙 액션의 경우 CI 부분과 거의 동일하게 변경해�
       run: |
         git fetch origin main
         if git diff --name-only HEAD^ HEAD | grep -q "^domain/"; then
-            echo "domain 모듈이 변경되었습니다."
-            echo "::set-output name=changes::domain_changed"
-        elif git diff --name-only HEAD^ HEAD | grep -q "^app-api/"; then
-            echo "api 모듈이 변경되었습니다."
-            echo "::set-output name=changes::api_changed"
-        elif git diff --name-only HEAD^ HEAD | grep -q "^app-scheduler/"; then
-            echo "scheduler 모듈이 변경되었습니다."
-            echo "::set-output name=changes::scheduler_changed"
+          echo "domain 모듈이 변경되었습니다."
+          echo "::set-output name=domain_changed::true"
         else
-            echo "모듈에 변경사항이 없습니다."
+          if git diff --name-only HEAD^ HEAD | grep -q "^app-api/"; then
+            echo "api 모듈이 변경되었습니다."
+            echo "::set-output name=api_changed::true"
+          fi
+          if git diff --name-only HEAD^ HEAD | grep -q "^app-scheduler/"; then
+            echo "scheduler 모듈이 변경되었습니다."
+            echo "::set-output name=scheduler_changed::true"
+          fi
         fi
 
     - name: 변경된 모듈을 build한다.
       run: |
-        case "${{ steps.check_changes.outputs.changes }}" in
-              domain_changed)
-                  echo "전체 모듈을 빌드합니다."
-                  ./gradlew build --parallel
-                  ;;
-              api_changed)
-                  echo "api 모듈을 빌드합니다."
-                  ./gradlew :app-api:build
-                  ;;
-              scheduler_changed)
-                  echo "scheduler 모듈을 빌드합니다."
-                  ./gradlew :app-scheduler:build
-                  ;;
-              *)
-                  echo "모듈에 변경 사항이 없습니다."
-                  ;;
-        esac
+        domain_changed=${{ steps.check_changes.outputs.domain_changed }}
+        api_changed=${{ steps.check_changes.outputs.api_changed }}
+        scheduler_changed=${{ steps.check_changes.outputs.scheduler_changed }}
+
+        if [ "$domain_changed" == "true" ]; then
+          echo "도메인 모듈 및 하위 모듈을 빌드합니다."
+          ./gradlew build --parallel
+        else
+          if [ "$api_changed" == "true" ]; then
+            echo "api 모듈을 빌드합니다."
+            ./gradlew :app-api:build
+          fi
+
+          if [ "$scheduler_changed" == "true" ]; then
+            echo "scheduler 모듈을 빌드합니다."
+            ./gradlew :app-scheduler:build
+          fi
+
+          if [ "$api_changed" != "true" ] && [ "$scheduler_changed" != "true" ]; then
+            echo "모듈에 변경 사항이 없습니다."
+          fi
+        fi
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1  
@@ -256,26 +268,26 @@ CD 부분도 깃헙 액션의 경우 CI 부분과 거의 동일하게 변경해�
         username: ${{ secrets.DOCKERHUB_USERNAME }}  
         password: ${{ secrets.DOCKERHUB_TOKEN }}     
 
-    - name: 도커 이미지 build 후 push
+    - name: 도커 이미지 build 후 push (API)
       uses: docker/build-push-action@v2
       if: |
-        steps.check_changes.outputs.changes == 'domain_changed' || 
-        steps.check_changes.outputs.changes == 'api_changed'
+        steps.check_changes.outputs.domain_changed == 'true' || 
+        steps.check_changes.outputs.api_changed == 'true'
       with:
-        context: .
-        file: app-api/Dockerfile
+        context: ./app-api
+        file: ./app-api/Dockerfile
         push: true  
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.API_IMAGE }}:${{ github.sha }}
         platforms: linux/amd64
 
-    - name: 도커 이미지 build 후 push
+    - name: 도커 이미지 build 후 push (Scheduler)
       uses: docker/build-push-action@v2
       if: |
-        steps.check_changes.outputs.changes == 'domain_changed' || 
-        steps.check_changes.outputs.changes == 'scheduler_changed'
+        steps.check_changes.outputs.domain_changed == 'true' || 
+        steps.check_changes.outputs.scheduler_changed == 'true'
       with:
-        context: .
-        file: app-scheduler/Dockerfile
+        context: ./app-scheduler
+        file: ./app-scheduler/Dockerfile
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.SCHEDULER_IMAGE }}:${{ github.sha }}
         platforms: linux/amd64
