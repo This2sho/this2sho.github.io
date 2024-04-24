@@ -187,6 +187,58 @@ public class Review {
 - 제네릭을 이용함으로서 어떤 엔티티를 참조하는지 알기 쉽다.
   - 만약`reviewerId`를 기본 값으로 표현했다면 생성하는 시점에 무슨 엔티티의 ID인지 헷갈릴 수 있다.
 
+추가로, `@Embedded` 와 `@AttributeOverride`가 중복되고 보기 싫어 질 수 있는데 이는 Converter를 사용하면 된다.
+
+Converter는 JPA에서 자바 객체와 데이터베이스간에 변환을 도와준다. 
+
+```java
+@Converter
+public class AssociationConverter implements AttributeConverter<Association, Long> {
+
+    @Override
+    public Long convertToDatabaseColumn(Association attribute) {
+        return attribute.getId();
+    }
+
+    @Override
+    public Association convertToEntityAttribute(Long dbData) {
+        return Association.from(dbData);
+    }
+}
+
+```
+
+- `convertToDatabaseColumn` 으로 데이터베이스에 저장될 값을 정의하면 된다.
+- `convertToEntityAttribute` 으로 데이터베이스 값을 자바 객체로 불러올 때를 정의하면 된다.
+
+이후, 아래 처럼 Converter를 적용해주면 된다.
+
+```java
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+public class Review {
+
+  private static final int MAX_CONTENTS_SIZE = 3;
+  
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+  
+  @Convert(converter = AssociationConverter.class)
+  private Association<Parking> parkingId;
+  
+  @Convert(converter = AssociationConverter.class)
+  private Association<Member> reviewerId;
+  
+  @Convert(converter = ContentConverter.class)
+  private List<Content> contents;
+  
+}
+```
+
+- `@Converter(autoApply = true)` 를 통해서 Converter에 글로벌로 설정 할 수 있는 데, 이는 팀에서 정하면 된다.
+
 ---
 
 ## 결론
