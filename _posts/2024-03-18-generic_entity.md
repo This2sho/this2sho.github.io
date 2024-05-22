@@ -237,7 +237,7 @@ public class Review {
 }
 ```
 
-- `@Converter(autoApply = true)` 를 통해서 Converter에 글로벌로 설정 할 수 있는 데, 이는 팀에서 정하면 된다.
+- `@Converter(autoApply = true)` 를 통해서 Converter에 글로벌로 설정 할 수 있는 데, 이는 팀에서 정하면 된다. 
 
 ---
 
