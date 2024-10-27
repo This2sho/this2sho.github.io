@@ -1,22 +1,17 @@
----
----
-
 <!doctype html>
-<!--
-  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
-  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
-  Free for personal and commercial use under the MIT license
-  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
--->
 <html lang="{{ site.locale | slice: 0,2 | default: "en" }}" class="no-js">
-  <head>
-    {% include head.html %}
-    {% include head/custom.html %}
-  </head>
+<head>
+  {% include head.html %}
+  {% include head/custom.html %}
+  <!-- PDF.js 스크립트를 전체 페이지에 적용하지 않고, PDF 전용 페이지에서만 로드 -->
+  {% if page.pdf_only %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  {% endif %}
+</head>
 
-  <body class="layout--{{ page.layout | default: layout.layout }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}">
+<body class="layout--{{ page.layout | default: layout.layout }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}">
 
-    {% if page.pdf_only %}
+  {% if page.pdf_only %}
     <!-- PDF 전용 페이지 스타일 및 컨테이너 -->
     <style>
       /* PDF 전용 페이지에서 기본 테마 요소 숨기기 */
@@ -69,8 +64,8 @@
       });
     </script>
 
-    {% else %}
-    <!-- 기본 레이아웃 요소 -->
+  {% else %}
+  <!-- 기본 테마 요소 -->
     {% include_cached skip-links.html %}
     {% include_cached masthead.html %}
 
@@ -79,9 +74,9 @@
     </div>
 
     {% if site.search == true %}
-      <div class="search-content">
-        {% include_cached search/search_form.html %}
-      </div>
+    <div class="search-content">
+      {% include_cached search/search_form.html %}
+    </div>
     {% endif %}
 
     <div id="footer" class="page__footer">
@@ -92,7 +87,7 @@
     </div>
     {% endif %}
 
-    {% include scripts.html %}
+  {% include scripts.html %}
 
-  </body>
+</body>
 </html>
