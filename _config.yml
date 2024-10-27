@@ -271,5 +271,6 @@ defaults:
       share: true
       related: true
       show_date: true
+      pdf_only: true
 
 date_format: "%Y-%m-%d"

@@ -15,6 +15,25 @@
   </head>
 
   <body class="layout--{{ page.layout | default: layout.layout }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}">
+
+    {% if page.pdf_only %}
+    <!-- PDF 전용 페이지일 때 스타일 및 PDF 표시 -->
+    <style>
+      /* PDF 전용 페이지에서 모든 기본 요소 숨기기 */
+      .initial-content, .search-content, #footer, .masthead { display: none; }
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+      }
+    </style>
+
+    <!-- PDF 파일을 iframe으로 전체 화면에 표시 -->
+    <iframe src="{{ page.pdf_url }}" width="100%" height="100%" style="border: none;"></iframe>
+
+    {% else %}
+    <!-- 기본 레이아웃 요소 -->
     {% include_cached skip-links.html %}
     {% include_cached masthead.html %}
 
@@ -34,6 +53,7 @@
         {% include_cached footer.html %}
       </footer>
     </div>
+    {% endif %}
 
     {% include scripts.html %}
 
