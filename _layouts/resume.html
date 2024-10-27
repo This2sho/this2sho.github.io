@@ -1,0 +1,24 @@
+<!-- _layouts/pdf_iframe.html -->
+<!doctype html>
+<html lang="{{ site.locale | slice: 0,2 | default: "en" }}" class="no-js">
+<head>
+  {% include head.html %}
+  {% include head/custom.html %}
+</head>
+
+  <body style="margin: 0; padding: 0; height: 100vh; overflow: hidden;">
+    <style>
+      /* PDF 전용 레이아웃에서 기본 테마 요소 숨기기 */
+      .initial-content, .search-content, #footer, .masthead { display: none; }
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+      }
+    </style>
+
+  <!-- PDF 파일을 iframe으로 표시 -->
+    <iframe src="{{ page.pdf_url }}" width="100%" height="100%" style="border: none;"></iframe>
+  </body>
+</html>
