@@ -17,20 +17,57 @@
   <body class="layout--{{ page.layout | default: layout.layout }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}">
 
     {% if page.pdf_only %}
-    <!-- PDF 전용 페이지일 때 스타일 및 PDF 표시 -->
+    <!-- PDF 전용 페이지 스타일 및 컨테이너 -->
     <style>
-      /* PDF 전용 페이지에서 모든 기본 요소 숨기기 */
+      /* PDF 전용 페이지에서 기본 테마 요소 숨기기 */
       .initial-content, .search-content, #footer, .masthead { display: none; }
-      body {
+      body, html {
         margin: 0;
         padding: 0;
         height: 100vh;
         overflow: hidden;
       }
+      #pdf-viewer {
+        width: 100%;
+        height: 100vh;
+        overflow: auto;
+      }
     </style>
 
-    <!-- PDF 파일을 iframe으로 전체 화면에 표시 -->
-    <iframe src="{{ page.pdf_url }}" width="100%" height="100%" style="border: none;"></iframe>
+    <!-- PDF를 표시할 컨테이너 -->
+    <div id="pdf-viewer"></div>
+
+    <!-- PDF.js를 이용해 PDF 렌더링 -->
+    <script>
+      var url = '{{ page.pdf_url }}';  // PDF 파일 경로를 page.pdf_url에서 받아옴
+
+      // PDF.js 설정
+      var pdfjsLib = window['pdfjs-dist/build/pdf'];
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+      // PDF 로드 및 렌더링
+      pdfjsLib.getDocument(url).promise.then(pdf => {
+        var container = document.getElementById('pdf-viewer');
+
+        // 모든 페이지를 렌더링
+        for (var pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+          pdf.getPage(pageNumber).then(page => {
+            var viewport = page.getViewport({ scale: 1.5 });
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            container.appendChild(canvas);
+
+            // 페이지를 캔버스에 렌더링
+            page.render({
+              canvasContext: context,
+              viewport: viewport
+            });
+          });
+        }
+      });
+    </script>
 
     {% else %}
     <!-- 기본 레이아웃 요소 -->
